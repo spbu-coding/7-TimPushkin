@@ -14,10 +14,10 @@ OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/str_handler.o
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) | $(BUILD_DIR)
 	$(LD) $(LDFLAGS) $^ -o $@
 
-$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c
+$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $^ -o $@
 
 check: $(TARGET)
@@ -36,6 +36,9 @@ check: $(TARGET)
     if $${TEST_FAILED} ; then \
         exit 1 ; \
     fi
+
+$(BUILD_DIR):
+	mkdir -p $@
 
 clean:
 	$(RM) $(TARGET) $(OBJS) $(TEST_TS_FILE)
