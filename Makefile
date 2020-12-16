@@ -5,10 +5,13 @@ LD = gcc
 
 TEST_INP_EXT = in
 TEST_OTP_EXT = out
-TEST_TS_FILE = $(TEST_DIR)/last-check.ts
+TEST_LOG_EXT = log
+TEST_OK_STAT = ok
+TEST_FL_STAT = failed
 
 TARGET = $(BUILD_DIR)/$(NAME)
 OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/str_handler.o
+LOGS = $(patsubst $(TEST_DIR)/%.$(TEST_INP_EXT), $(TEST_DIR)/%.$(TEST_LOG_EXT), $(wildcard $(TEST_DIR)/*.$(TEST_INP_EXT)))
 
 .PHONY: all check clean
 
@@ -20,25 +23,24 @@ $(TARGET): $(OBJS) | $(BUILD_DIR)
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $^ -o $@
 
-check: $(TARGET)
-	@TEST_FAILED=false ; \
-	for inp in $(TEST_DIR)/*.$(TEST_INP_EXT) ; do \
-        if  [ ! -f $(TEST_TS_FILE) ] || [ $${inp} -nt $(TEST_TS_FILE) ] || [ $(TARGET) -nt $(TEST_TS_FILE) ] ; then \
-            if [ "$$(./$(TARGET) ./$${inp})" = "$$(cat $${inp%.*}.$(TEST_OTP_EXT))" ] ; then \
-                echo "Test $${inp} - ok" ; \
-            else \
-                echo "Test $${inp} - failed" ; \
-                TEST_FAILED=true ; \
-            fi ; \
-        fi \
-    done ; \
-    touch $(TEST_TS_FILE) ; \
-    if $${TEST_FAILED} ; then \
-        exit 1 ; \
-    fi
-
 $(BUILD_DIR):
 	mkdir -p $@
 
+check: $(LOGS) $(TARGET)
+	@for log in $< ; do \
+        if [ "$$(cat $${log})" != "$(TEST_OK_STAT)" ] ; then \
+            exit 1 ; \
+        fi ; \
+    done
+
+$(TEST_DIR)/%.$(TEST_LOG_EXT): $(TEST_DIR)/%.$(TEST_INP_EXT) $(TEST_DIR)/%.$(TEST_OTP_EXT)
+	@if [ "$$(./$(TARGET) ./$<)" = "$$(cat $(word 2, $^))" ] ; then \
+        echo "$(TEST_OK_STAT)" > $@ ; \
+        echo "Test $< - success" ; \
+    else \
+        echo "$(TEST_FL_STAT)" > $@ ; \
+        echo "Test $< - fail" ; \
+    fi
+
 clean:
-	$(RM) $(TARGET) $(OBJS) $(TEST_TS_FILE)
+	$(RM) $(TARGET) $(OBJS) $(LOGS)
