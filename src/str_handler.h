@@ -14,6 +14,6 @@ unsigned int split_str_into_lines(char* str, struct strs_array_t* lines_containe
 
 unsigned int print_strs(const struct strs_array_t* strs_to_print, size_t strs_to_print_limit);
 
-int cmp_strs(const void* str1, const void* str2);
+int cmp_strs_des(const void* str1, const void* str2);
 
 #endif

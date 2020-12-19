@@ -71,7 +71,7 @@ int main(const int argc, const char* argv[]) {
         free(file_contents);
         return 1;
     }
-    qsort(strs_to_sort.strs, strs_to_sort.size, sizeof(char*), cmp_strs);
+    qsort(strs_to_sort.strs, strs_to_sort.size, sizeof(char *), cmp_strs_des);
     if (print_strs(&strs_to_sort, STRS_TO_PRINT_NUM)) {
         free(file_contents);
         free(strs_to_sort.strs);

@@ -7,10 +7,12 @@ void remove_chars_from_str(char* const* const str, const char* const chars_to_re
     const size_t str_len = strlen(*str);
     size_t cur_char = 0, offset = 0;
     while (offset < str_len) {
-        while (strchr(chars_to_remove, (*str)[offset]) != NULL) {
+        while (strchr(chars_to_remove, (*str)[offset]) != NULL && offset < str_len) {
             offset++;
         }
-        (*str)[cur_char++] = (*str)[offset++];
+        if (offset < str_len) {
+            (*str)[cur_char++] = (*str)[offset++];
+        }
     }
     (*str)[cur_char] = '\0';
 }
@@ -23,7 +25,7 @@ unsigned int split_str_into_lines(char* const str, struct strs_array_t* const li
         }
     }
     lines_container->strs = (char**) malloc(lines_container->size * sizeof(char*));
-    if (lines_container == NULL) {
+    if (lines_container == NULL && lines_container->size > 0) {
         fprintf(stderr, "Failed to allocate memory for pointers to lines\n");
         return 1;
     }
@@ -48,6 +50,6 @@ unsigned int print_strs(const struct strs_array_t* const strs_to_print, const si
     return 0;
 }
 
-int cmp_strs(const void* const str1, const void* const str2) {
+int cmp_strs_des(const void* const str1, const void* const str2) {
     return -strcmp(*((char* const*) str1), *((char* const*) str2));
 }
