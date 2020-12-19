@@ -33,7 +33,7 @@ $(BUILD_DIR):
 
 
 check: $(LOGS)
-	@for log in $< ; do \
+	@for log in $^ ; do \
         if [ "$$(cat $${log})" != "$(TEST_OK_STAT)" ] ; then \
             exit 1 ; \
         fi ; \
