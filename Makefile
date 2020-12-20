@@ -11,7 +11,7 @@ TEST_OK_STAT = ok
 TEST_FL_STAT = fl
 
 EXEC = $(BUILD_DIR)/$(NAME)
-OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/str_handler.o
+OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/str_handler.o $(BUILD_DIR)/filesize_calc.o
 DEPS = $(OBJS:.o=.d)
 LOGS = $(patsubst $(TEST_DIR)/%.$(TEST_INP_EXT), $(TEST_DIR)/%.$(TEST_LOG_EXT), $(wildcard $(TEST_DIR)/*.$(TEST_INP_EXT)))
 
@@ -24,7 +24,7 @@ $(EXEC): $(OBJS)
 	$(LD) $(LDFLAGS) $^ -o $@
 
 $(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 -include $(DEPS)
 

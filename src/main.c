@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "str_handler.h"
+#include "filesize_calc.h"
 
 #define close_file_after_err(file) if (fclose(file) != 0) fprintf(stderr, "Also failed to close the file\n")
 
@@ -14,29 +15,19 @@ unsigned int read_file(const char* const filename, char** const file_contents_co
         fprintf(stderr, "Failed to open %s\n", filename);
         return 1;
     }
-    if (fseek(file_to_read, 0, SEEK_END)) {
-        fprintf(stderr, "Failed to read %s (fseek failed)\n", filename);
+    size_t filesize;
+    if (calculate_filesize(file_to_read, &filesize)) {
+        fprintf(stderr, "Failed to calculate the size of %s\n", filename);
         close_file_after_err(file_to_read);
         return 1;
     }
-    const long file_size = ftell(file_to_read);
-    if (file_size == -1) {
-        fprintf(stderr, "Failed to read %s (ftell failed)\n", filename);
-        close_file_after_err(file_to_read);
-        return 1;
-    }
-    if (fseek(file_to_read, 0, SEEK_SET)) {
-        fprintf(stderr, "Failed to read %s (fseek failed)\n", filename);
-        close_file_after_err(file_to_read);
-        return 1;
-    }
-    *file_contents_container = (char*) malloc((file_size + 2) * sizeof(char));
+    *file_contents_container = (char*) malloc((filesize + 2) * sizeof(char));
     if (*file_contents_container == NULL) {
         fprintf(stderr, "Failed to allocate memory for contents of %s\n", filename);
         close_file_after_err(file_to_read);
         return 1;
     }
-    if (file_size > 0 && fread(*file_contents_container, file_size, 1, file_to_read) != 1) {
+    if (filesize > 0 && fread(*file_contents_container, filesize, 1, file_to_read) != 1) {
         fprintf(stderr, "Failed to read %s (fread failed)\n", filename);
         free(*file_contents_container);
         close_file_after_err(file_to_read);
@@ -47,11 +38,11 @@ unsigned int read_file(const char* const filename, char** const file_contents_co
         free(*file_contents_container);
         return 1;
     }
-    if (file_size > 0 && (*file_contents_container)[file_size - 1] != '\n') {
-        (*file_contents_container)[file_size] = '\n';
-        (*file_contents_container)[file_size + 1] = '\0';
+    if (filesize > 0 && (*file_contents_container)[filesize - 1] != '\n') {
+        (*file_contents_container)[filesize] = '\n';
+        (*file_contents_container)[filesize + 1] = '\0';
     } else {
-        (*file_contents_container)[file_size] = '\0';
+        (*file_contents_container)[filesize] = '\0';
     }
     return 0;
 }
@@ -71,7 +62,7 @@ int main(const int argc, const char* argv[]) {
         free(file_contents);
         return 1;
     }
-    qsort(strs_to_sort.strs, strs_to_sort.size, sizeof(char *), cmp_strs_des);
+    qsort(strs_to_sort.strs, strs_to_sort.size, sizeof(char*), cmp_strs_des);
     if (print_strs(&strs_to_sort, STRS_TO_PRINT_NUM)) {
         free(file_contents);
         free(strs_to_sort.strs);
